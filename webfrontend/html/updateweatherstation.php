@@ -4,6 +4,7 @@ require_once "loxberry_log.php";
 require_once "loxberry_XL.php";
 
 $remove_imperial_units = true;
+$w4l_transfer_file = '/dev/shm/pwscatchupload_w4l.json';
 
 $log = LBLog::newLog( [ 
 	"name" => "Weatherrequest" 
@@ -18,10 +19,6 @@ if( isset($getdata['lbforwarded']) ) {
 	LOGEND();
 	exit;
 }
-
-$tmpfilename = "/tmp/wunderground_data.log";
-LOGINF("For debugging, writing data to $tmpfilename");
-file_put_contents( $tmpfilename, print_r( $_GET ) );
 
 $_GET['lbforwarded'] = 1;
 
@@ -129,6 +126,30 @@ $getdata['lastUpdateHr'] = currtime('hr');
 
 LOGDEB("Raw data:");
 LOGDEB( print_r( $getdata, true ) );
+
+// Prepare dataset for W4L integration
+$w4l = new StdClass();
+$w4l->stationid = $ws;
+$w4l->cur_date = time();
+$w4l->cur_date_iso = currtime('iso');
+if(isset($getdata['windchillc'])) 		{ $w4l->cur_w_ch = floatval( $getdata['windchillc'] ); }
+if(isset($getdata['baromhpa'])) 		{ $w4l->cur_pr = floatval( $getdata['baromhpa'] ) ; }
+if(isset($getdata['dewptc'])) 			{ $w4l->cur_dp = floatval( $getdata['dewptc'] ); }
+// if(isset($getdata[''])) 				{ $w4l->cur_tt_fl = $getdata['']; }
+if(isset($getdata['humidity'])) 		{ $w4l->cur_hu = floatval( $getdata['humidity'] ); }
+// if(isset($getdata[''])) 				{ $w4l->cur_we_code = $getdata['']; }
+if(isset($getdata['tempc'])) 			{ $w4l->cur_tt = floatval( $getdata['tempc']) ; }
+if(isset($getdata['winddir'])) 			{ $w4l->cur_w_dir = floatval( $getdata['winddir'] ); }
+if(isset($getdata['solarradiation'])) 	{ $w4l->cur_sr = floatval( $getdata['solarradiation'] ); }
+if(isset($getdata['windspeedkmh'])) 	{ $w4l->cur_w_sp = floatval( $getdata['windspeedkmh'] ); }
+if(isset($getdata['windgustkmh'])) 		{ $w4l->cur_w_gu = floatval( $getdata['windgustkmh'] ); }
+
+// Write json for W4L
+file_put_contents(
+	$w4l_transfer_file, 
+	json_encode( $w4l, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE )
+);
+
 
 // Iterate and send all values
 foreach( $getdata as $key => $value ) {
