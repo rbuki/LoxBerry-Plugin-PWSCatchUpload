@@ -13,10 +13,10 @@ LBWeb::lbheader($template_title, $helplink, $helptemplate);
 ?>
 
 <h1>This plugin has no settings.</h1>
-<p>Every request of a weatherstation is logged (see below).</p>
+<p>Every request of a weatherstation is logged (press the button ;-) ). Logfiles are deleted automatically on a regular basis.</p>
 
 <?php
 
-echo LBWeb::loglist_html( [] );
+echo LBWeb::loglist_button_html ( [] );
 
 LBWeb::lbfooter();
