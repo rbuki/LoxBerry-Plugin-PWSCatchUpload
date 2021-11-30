@@ -2,14 +2,23 @@
 require_once "loxberry_system.php";
 require_once "loxberry_XL.php";
 
-file_put_contents( "/tmp/wunderground_data.log", print_r( $_GET ) );
-
 $remove_imperial_units = true;
 
+$getdata = $_GET;
+
+// If the incoming request was created by this script, exit (->loop)
+if( isset($getdata['lbforwarded']) ) {
+	error_log("updateweatherstation: Incoming request is a loop -> Canceling");
+	exit;
+}
+
+file_put_contents( "/tmp/wunderground_data.log", print_r( $_GET ) );
+
+$_GET['lbforwarded'] = 1;
 
 $topic="wstation/";
-if( isset($_GET['ID']) ) {
-    $ws = $_GET['ID'];
+if( isset($getdata['ID']) ) {
+    $ws = $getdata['ID'];
 } else {
     $ws = "Generic";
 }
@@ -18,96 +27,96 @@ if( isset($_GET['ID']) ) {
 // https://support.weather.com/s/article/PWS-Upload-Protocol?language=en_US
 
 // Fahrenheit to Celsius
-if( isset( $_GET['tempf'] ) ) {
-	$_GET['tempc'] = to_celsius( $_GET['tempf'] );
+if( isset( $getdata['tempf'] ) ) {
+	$getdata['tempc'] = to_celsius( $getdata['tempf'] );
 }
-if( isset( $_GET['dewptf'] ) ) {
-	$_GET['dewptc'] = to_celsius( $_GET['dewptf'] );
+if( isset( $getdata['dewptf'] ) ) {
+	$getdata['dewptc'] = to_celsius( $getdata['dewptf'] );
 }
-if( isset( $_GET['windchillf'] ) ) {
-	$_GET['windchillc'] = to_celsius( $_GET['windchillf'] );
+if( isset( $getdata['windchillf'] ) ) {
+	$getdata['windchillc'] = to_celsius( $getdata['windchillf'] );
 }
-if( isset( $_GET['indoortempf'] ) ) {
-	$_GET['indoortempc'] = to_celsius( $_GET['indoortempf'] );
+if( isset( $getdata['indoortempf'] ) ) {
+	$getdata['indoortempc'] = to_celsius( $getdata['indoortempf'] );
 }
-if( isset( $_GET['soiltempf'] ) ) {
-	$_GET['soiltempc'] = to_celsius( $_GET['soiltempf'] );
+if( isset( $getdata['soiltempf'] ) ) {
+	$getdata['soiltempc'] = to_celsius( $getdata['soiltempf'] );
 }
-if( isset( $_GET['soiltemp2f'] ) ) {
-	$_GET['soiltemp2c'] = to_celsius( $_GET['soiltemp2f'] );
+if( isset( $getdata['soiltemp2f'] ) ) {
+	$getdata['soiltemp2c'] = to_celsius( $getdata['soiltemp2f'] );
 }
-if( isset( $_GET['soiltemp3f'] ) ) {
-	$_GET['soiltemp3c'] = to_celsius( $_GET['soiltemp3f'] );
+if( isset( $getdata['soiltemp3f'] ) ) {
+	$getdata['soiltemp3c'] = to_celsius( $getdata['soiltemp3f'] );
 }
-if( isset( $_GET['soiltemp4f'] ) ) {
-	$_GET['soiltemp4c'] = to_celsius( $_GET['soiltemp4f'] );
+if( isset( $getdata['soiltemp4f'] ) ) {
+	$getdata['soiltemp4c'] = to_celsius( $getdata['soiltemp4f'] );
 }
 
 // Miles to km/h
-if( isset( $_GET['windspeedmph'] ) ) {
-	$_GET['windspeedkmh'] = to_kmh( $_GET['windspeedmph'] );
+if( isset( $getdata['windspeedmph'] ) ) {
+	$getdata['windspeedkmh'] = to_kmh( $getdata['windspeedmph'] );
 }
-if( isset( $_GET['windgustmph'] ) ) {
-	$_GET['windgustkmh'] = to_kmh( $_GET['windgustmph'] );
+if( isset( $getdata['windgustmph'] ) ) {
+	$getdata['windgustkmh'] = to_kmh( $getdata['windgustmph'] );
 }
-if( isset( $_GET['windspdmph_avg2m'] ) ) {
-	$_GET['windspdkmh_avg2m'] = to_kmh( $_GET['windspdmph_avg2m'] );
+if( isset( $getdata['windspdmph_avg2m'] ) ) {
+	$getdata['windspdkmh_avg2m'] = to_kmh( $getdata['windspdmph_avg2m'] );
 }
-if( isset( $_GET['windgustmph_10m'] ) ) {
-	$_GET['windgustkmh_10m'] = to_kmh( $_GET['windgustmph_10m'] );
+if( isset( $getdata['windgustmph_10m'] ) ) {
+	$getdata['windgustkmh_10m'] = to_kmh( $getdata['windgustmph_10m'] );
 }
 
 
 // Inch to mm
-if( isset( $_GET['baromin'] ) ) {
-	$_GET['barommm'] = to_mm( $_GET['baromin'] );
-	$_GET['baromhpa'] = round( $_GET['barommm'] * 1.333224, 2 );
+if( isset( $getdata['baromin'] ) ) {
+	$getdata['barommm'] = to_mm( $getdata['baromin'] );
+	$getdata['baromhpa'] = round( $getdata['barommm'] * 1.333224, 2 );
 }
-if( isset( $_GET['rainin'] ) ) {
-	$_GET['rainmm'] = to_mm( $_GET['rainin'] );
+if( isset( $getdata['rainin'] ) ) {
+	$getdata['rainmm'] = to_mm( $getdata['rainin'] );
 }
-if( isset( $_GET['dailyrainin'] ) ) {
-	$_GET['dailyrainmm'] = to_mm( $_GET['dailyrainin'] );
+if( isset( $getdata['dailyrainin'] ) ) {
+	$getdata['dailyrainmm'] = to_mm( $getdata['dailyrainin'] );
 }
-if( isset( $_GET['weeklyrainin'] ) ) {
-	$_GET['weeklyrainmm'] = to_mm( $_GET['weeklyrainin'] );
+if( isset( $getdata['weeklyrainin'] ) ) {
+	$getdata['weeklyrainmm'] = to_mm( $getdata['weeklyrainin'] );
 }
-if( isset( $_GET['monthlyrainin'] ) ) {
-	$_GET['monthlyrainmm'] = to_mm( $_GET['monthlyrainin'] );
+if( isset( $getdata['monthlyrainin'] ) ) {
+	$getdata['monthlyrainmm'] = to_mm( $getdata['monthlyrainin'] );
 }
-if( isset( $_GET['yearlyrainin'] ) ) {
-	$_GET['yearlyrainmm'] = to_mm( $_GET['yearlyrainin'] );
+if( isset( $getdata['yearlyrainin'] ) ) {
+	$getdata['yearlyrainmm'] = to_mm( $getdata['yearlyrainin'] );
 }
 
 
 if( $remove_imperial_units) {
 	
-	unset($_GET['tempf']);
-	unset($_GET['dewptf']);
-	unset($_GET['windchillf']);
-	unset($_GET['indoortempf']);
-	unset($_GET['soiltempf']);
-	unset($_GET['soiltemp2f']);
-	unset($_GET['soiltemp3f']);
-	unset($_GET['soiltemp4f']);
+	unset($getdata['tempf']);
+	unset($getdata['dewptf']);
+	unset($getdata['windchillf']);
+	unset($getdata['indoortempf']);
+	unset($getdata['soiltempf']);
+	unset($getdata['soiltemp2f']);
+	unset($getdata['soiltemp3f']);
+	unset($getdata['soiltemp4f']);
 	
-	unset($_GET['windspeedmph']);
-	unset($_GET['windgustmph']);
-	unset($_GET['windspdmph_avg2m']);
-	unset($_GET['windgustmph_10m']);
+	unset($getdata['windspeedmph']);
+	unset($getdata['windgustmph']);
+	unset($getdata['windspdmph_avg2m']);
+	unset($getdata['windgustmph_10m']);
 
-	unset($_GET['baromin']);
-	unset($_GET['rainin']);
-	unset($_GET['dailyrainin']);
-	unset($_GET['weeklyrainin']);
-	unset($_GET['monthlyrainin']);
-	unset($_GET['yearlyrainin']);
+	unset($getdata['baromin']);
+	unset($getdata['rainin']);
+	unset($getdata['dailyrainin']);
+	unset($getdata['weeklyrainin']);
+	unset($getdata['monthlyrainin']);
+	unset($getdata['yearlyrainin']);
 	
 }
 
 // Set update timestamp
-$_GET['lastUpdateEpoch'] = time();
-$_GET['lastUpdateHr'] = currtime('hr');
+$getdata['lastUpdateEpoch'] = time();
+$getdata['lastUpdateHr'] = currtime('hr');
 
 // Iterate and send all values
 foreach( $_GET as $key => $value ) {
