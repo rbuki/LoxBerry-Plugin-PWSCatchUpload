@@ -1,18 +1,27 @@
 <?php
 require_once "loxberry_system.php";
+require_once "loxberry_log.php";
 require_once "loxberry_XL.php";
 
 $remove_imperial_units = true;
+
+$log = LBLog::newLog( [ 
+	"name" => "Weatherrequest" 
+] );
+LOGSTART("Request from " . $_SERVER['REMOTE_ADDR']);
 
 $getdata = $_GET;
 
 // If the incoming request was created by this script, exit (->loop)
 if( isset($getdata['lbforwarded']) ) {
-	error_log("updateweatherstation: Incoming request is a loop -> Canceling");
+	LOGWARN("Incoming request is a loop -> Canceling");
+	LOGEND();
 	exit;
 }
 
-file_put_contents( "/tmp/wunderground_data.log", print_r( $_GET ) );
+$tmpfilename = "/tmp/wunderground_data.log";
+LOGINF("For debugging, writing data to $tmpfilename");
+file_put_contents( $tmpfilename, print_r( $_GET ) );
 
 $_GET['lbforwarded'] = 1;
 
@@ -22,7 +31,7 @@ if( isset($getdata['ID']) ) {
 } else {
     $ws = "Generic";
 }
-
+LOGINF("Weatherstation ID: $ws");
 // PWS Upload protocol documentation
 // https://support.weather.com/s/article/PWS-Upload-Protocol?language=en_US
 
@@ -118,11 +127,15 @@ if( $remove_imperial_units) {
 $getdata['lastUpdateEpoch'] = time();
 $getdata['lastUpdateHr'] = currtime('hr');
 
+LOGDEB("Raw data:");
+LOGDEB( print_r( $getdata, true ) );
+
 // Iterate and send all values
 foreach( $_GET as $key => $value ) {
 	$mqtt->set($topic.$ws."/"."$key", $value);
 }
 
+LOGEND("Finished");
 
 
 // Functions for unit conversions
