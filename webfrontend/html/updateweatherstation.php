@@ -131,7 +131,7 @@ LOGDEB("Raw data:");
 LOGDEB( print_r( $getdata, true ) );
 
 // Iterate and send all values
-foreach( $_GET as $key => $value ) {
+foreach( $getdata as $key => $value ) {
 	$mqtt->set($topic.$ws."/"."$key", $value);
 }
 
