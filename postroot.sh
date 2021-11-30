@@ -11,4 +11,4 @@ else
 fi
 
 echo "<INFO> Reloading Apache configuration"
-systemctl apache2 reload
+systemctl reload apache2

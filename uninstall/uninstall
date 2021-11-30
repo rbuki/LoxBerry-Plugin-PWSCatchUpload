@@ -3,4 +3,4 @@
 a2dissite 002-wunderground.conf
 rm "/etc/apache2/sites-available/002-wunderground.conf"
 echo "<INFO> Reloading Apache configuration"
-systemctl apache2 reload
+systemctl reload apache2
