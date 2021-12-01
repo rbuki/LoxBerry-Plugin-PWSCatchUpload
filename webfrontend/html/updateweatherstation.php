@@ -26,7 +26,8 @@ $topic="wstation/";
 if( isset($getdata['ID']) ) {
     $ws = $getdata['ID'];
 } else {
-    $ws = "Generic";
+    genericPage();
+
 }
 LOGINF("Weatherstation ID: $ws");
 // PWS Upload protocol documentation
@@ -171,4 +172,25 @@ function to_kmh( $mph ) {
 
 function to_mm( $inch ) {
 	return round( $inch * 25.4 , 2 );	
+}
+
+// This is shown if no Station ID was sent (--> Test call by browser?)
+function genericPage(){
+
+?>
+
+<div style="text-align:center">
+<img src="icon_256.png">
+<h1>WU Update Catcher</h1>
+<p>You accessed the WU Update Catcher website that grabs Weather Undergroud Update protocol requests.</p>
+<p>As the request missed the <b>ID</b> datafield, the Catcher assumed that this is not a Weather Station but it's you within your browser.</b>
+<p>Nothing is forwarded to MQTT by this test request. Regular weatherstation requests will be forwarded to your MQTT broker unter the topic <b>wstation/#</b>.</p>
+</div>
+	
+<?php
+LOGWARN("WU Update Catcher site requested without station ID - assuming this was a test request from the browser.");
+LOGTITLE("Test request from ". $_SERVER['REMOTE_ADDR']);
+LOGEND();
+exit();
+	
 }
