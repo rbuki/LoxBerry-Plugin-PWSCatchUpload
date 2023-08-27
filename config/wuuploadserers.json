@@ -1,0 +1,4 @@
+{
+	"wuUploadServers": ["rtupdate.wunderground.com","weatherstation.wunderground.com","pws-ingest-use1-01.sun.weather.com"],
+	"dnsResolvedHostMustContain": "amazonaws.com"
+}

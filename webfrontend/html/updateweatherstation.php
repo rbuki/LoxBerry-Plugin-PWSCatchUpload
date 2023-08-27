@@ -2,9 +2,11 @@
 require_once "loxberry_system.php";
 require_once "loxberry_log.php";
 require_once "loxberry_XL.php";
+require_once "loxberry_json.php";
 
 $remove_imperial_units = true;
 $w4l_transfer_file = '/dev/shm/pwscatchupload_w4l.json';
+
 
 $log = LBLog::newLog( [ 
 	"name" => "Weatherrequest" 
@@ -12,6 +14,7 @@ $log = LBLog::newLog( [
 LOGSTART("Request from " . $_SERVER['REMOTE_ADDR']);
 
 $getdata = $_GET;
+$getdataImp = $getdata;
 
 // If the incoming request was created by this script, exit (->loop)
 if( isset($getdata['lbforwarded']) ) {
@@ -157,8 +160,53 @@ foreach( $getdata as $key => $value ) {
 	$mqtt->set($topic.$ws."/"."$key", $value);
 }
 
-LOGEND("Finished");
 
+//detect the uploadserver (which is not yet in use) and upload data if configured to do so
+$newQueryString = "";
+$wuPushToCloud = true;
+$wuPushToCloudUrlTemplate = "https://%s/weatherstation/updateweatherstation.php?%s";
+$serversJson = new LBJSON("$lbpconfigdir/wuuploadserers.json");
+$wuRequestedServer = explode(":",strtolower($_SERVER['HTTP_HOST']))[0];
+
+$cJson = new LBJSON("$lbpconfigdir/configuration.json");
+$wuPushToCloud = $cJson->WuCloudUploadEnabled;
+LOGINF("WU Cloud Update is ". (($wuPushToCloud == true) ? "enabled" : "disabled") );
+
+if ($wuPushToCloud == true) {
+
+	foreach ($serversJson->wuUploadServers as $s) {
+		if (strtolower($s) != $wuRequestedServer ) { $wuActivatedServer = strtolower($s); }
+	}
+
+	if (isset($getdataImp['ID']) && isset($getdataImp['PASSWORD']) && isset($getdataImp['dateutc'])) {
+		foreach( $getdataImp as $key => $value ) {
+			if ($key == "ID-donotrepalcetomakethisbad") {
+				$newQueryString .= $key . "=" . urlencode("FAKESTATION") . "&"; //this is to foce unauthorized
+			} else {
+				$newQueryString .= $key . "=" . urlencode($value) . "&";
+			}
+		}
+		$newQueryString .= "lbforwarded=1";
+	}
+	
+	$newUrl = sprintf($wuPushToCloudUrlTemplate,$wuActivatedServer,$newQueryString);
+	LOGDEB("Cloud update URL and QueryString: $newUrl");
+
+	$curl = curl_init($newUrl);
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+	$resp = curl_exec($curl);
+	curl_close($curl);
+
+	if ($resp != "success") {
+		LOGDEB("Cloud update Return: $resp");
+	} else {
+		LOGERR("Cloud update Return: $resp");
+		LOGDEB("Cloud update URL and QueryString: $newUrl");
+	}
+}
+
+
+LOGEND("Finished");
 
 // Functions for unit conversions
 
