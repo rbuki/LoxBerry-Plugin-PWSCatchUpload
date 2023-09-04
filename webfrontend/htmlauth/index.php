@@ -41,7 +41,7 @@ if (isset($_POST['updater'])) {
     At least one of the following target servers needs to resolve to a public IPv4 address.<br>
     You need to have at least one <font color=green>green</font> line to get this working:<br><br>
     <?php
-    $serversJson = new LBJSON("$lbpconfigdir/wuuploadserers.json");
+    $serversJson = new LBJSON("$lbpconfigdir/wuuploadservers.json");
     $generalJson = new LBJSON("$lbsconfigdir/general.json");
     $countOfExternal = 0;
     foreach ($serversJson->wuUploadServers as $s) {

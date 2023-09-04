@@ -165,7 +165,7 @@ foreach( $getdata as $key => $value ) {
 $newQueryString = "";
 $wuPushToCloud = true;
 $wuPushToCloudUrlTemplate = "https://%s/weatherstation/updateweatherstation.php?%s";
-$serversJson = new LBJSON("$lbpconfigdir/wuuploadserers.json");
+$serversJson = new LBJSON("$lbpconfigdir/wuuploadservers.json");
 $wuRequestedServer = explode(":",strtolower($_SERVER['HTTP_HOST']))[0];
 
 $cJson = new LBJSON("$lbpconfigdir/configuration.json");
